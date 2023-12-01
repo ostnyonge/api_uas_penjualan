@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Dec 01, 2023 at 02:12 AM
+-- Generation Time: Dec 01, 2023 at 07:39 PM
 -- Server version: 10.4.28-MariaDB
 -- PHP Version: 8.2.4
 
@@ -101,8 +101,8 @@ CREATE TABLE `role` (
 --
 
 INSERT INTO `role` (`id`, `role`) VALUES
-(1, 'admin'),
-(2, 'user');
+(1, 'user'),
+(2, 'pelanggan');
 
 -- --------------------------------------------------------
 
@@ -113,9 +113,9 @@ INSERT INTO `role` (`id`, `role`) VALUES
 CREATE TABLE `user` (
   `id_user` int(11) NOT NULL,
   `nama` varchar(128) NOT NULL,
-  `jabatan` varchar(128) NOT NULL,
   `email` varchar(128) NOT NULL,
   `password` varchar(100) NOT NULL,
+  `jabatan` varchar(128) NOT NULL,
   `role` int(11) NOT NULL,
   `tanggal_bergabung` datetime NOT NULL,
   `modified` datetime NOT NULL
@@ -125,9 +125,10 @@ CREATE TABLE `user` (
 -- Dumping data for table `user`
 --
 
-INSERT INTO `user` (`id_user`, `nama`, `jabatan`, `email`, `password`, `role`, `tanggal_bergabung`, `modified`) VALUES
-(1, 'ostnyonge', 'IT Support', 'ostnyonge@gmail.com', '12345678', 1, '2023-11-29 09:55:25', '2023-11-29 09:55:25'),
-(2, 'sandwich', 'Web Developer', 'sandwich42@gmail.com', 'geprekbalmond', 2, '2023-11-29 10:09:58', '2023-12-01 05:16:26');
+INSERT INTO `user` (`id_user`, `nama`, `email`, `password`, `jabatan`, `role`, `tanggal_bergabung`, `modified`) VALUES
+(1, 'ostnyonge', 'ostynonge@gmail.com', 'd01c8c2565169e75677aeac5fdde5f6a2b646755652e7b214dd610695aa58d2d', 'CyberSecurity', 1, '2023-11-29 09:55:25', '2023-12-02 12:52:06'),
+(2, 'sandwich', 'sandwich@gmail.com', 'bd24a2701018cfd6f8292fe30ab3b4a1a57b96ba0b74af8b706ad5887afd2b5e', 'IT Support', 2, '2023-11-29 10:09:58', '2023-12-02 12:40:23'),
+(3, 'miegoreng', 'miegoreng@gmail.com', '84c6f3595955c06f9eedcb46dff257372faf7c12f124d7fa15cfa73a0b1d4afd', 'UI / UX', 2, '2023-12-02 12:45:34', '2023-12-02 12:45:34');
 
 --
 -- Indexes for dumped tables
