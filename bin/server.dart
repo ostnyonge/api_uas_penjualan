@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_relative_lib_imports, unused_import, unused_local_variable, non_constant_identifier_names, prefer_interpolation_to_compose_strings, unused_element
+// ignore_for_file: avoid_relative_lib_imports, unused_import, unused_local_variable, non_constant_identifier_names, prefer_interpolation_to_compose_strings, unused_element, unnecessary_string_interpolations
 
 import 'dart:convert';
 import 'dart:math';
@@ -19,7 +19,6 @@ import 'lib/produk.dart';
 // Configure routes.
 final _router = Router()
   ..get('/', _rootHandler)
-  ..post('/login', login)
   ..get('/user', _connectSqlHandlerUser)
   ..post('/userFilter', _handlerUserFilter)
   ..post('/postDataUser', postDataUser)
@@ -71,33 +70,6 @@ String hashPassword(String password) {
   return digest.toString();
 }
 
-// Fungsi untuk login
-Future<Response> login(Request request) async {
-  try {
-    String body = await request.readAsString();
-    Map<String, dynamic> loginData = json.decode(body);
-    String email = loginData['email'];
-    String password = loginData['password'];
-    String hashedPassword = hashPassword(
-        password); // menghashing password agar bisa membandingkannya dengan database.
-
-    var conn = await _ConnectSql();
-    var result = await conn.query(
-        'SELECT * FROM user WHERE email = ? AND password = ?',
-        [email, hashedPassword]);
-
-    if (result.isNotEmpty) {
-      // Login berhasil
-      return Response.ok('Login berhasil');
-    } else {
-      // Email atau password salah
-      return Response.forbidden('Email atau password salah');
-    }
-  } catch (e) {
-    return Response.internalServerError(body: 'Terjadi kesalahan');
-  }
-}
-
 // USER Create
 Future<Response> postDataUser(Request request) async {
   String body = await request.readAsString();
@@ -120,7 +92,7 @@ Future<Response> postDataUser(Request request) async {
   user.password = hashedPassword;
 
   var conn = await _ConnectSql();
-  var sqlExecute = """
+  var sqlExecute = """ 
 INSERT INTO user (
   id_user, nama,
   email, password, role,
@@ -139,7 +111,10 @@ INSERT INTO user (
   var sql =
       "SELECT * FROM user INNER JOIN role ON user.role = role.id WHERE nama = ?";
   var userResponse = await conn.query(sql, [user.nama]);
-  return Response.ok(userResponse.toString());
+  return Response.ok("""
+Berhasil Membuat User !
+info :
+  >> ${userResponse.toString()}""");
 }
 
 /* CREATE data User */
@@ -189,7 +164,10 @@ WHERE id_user = '${user.id_user}'
   var sql = "SELECT * FROM user WHERE id_user = ?";
   var userResponse = await conn.query(sql, [user.id_user]);
 
-  return Response.ok(userResponse.toString());
+  return Response.ok("""
+Berhasil Mengubah User !
+info :
+  >>  ${userResponse.toString()}""");
 }
 
 /* UPDATE data User */
@@ -217,7 +195,10 @@ DELETE FROM user WHERE id_user ='${user.id_user}'
   var sql = "SELECT * FROM user WHERE id_user = ?";
   var userResponse = await conn.query(sql, [user.id_user]);
 
-  return Response.ok(userResponse.toString());
+  return Response.ok("""
+Berhasil Menghapus User !
+info :
+  >> ${userResponse.toString()}""");
 }
 
 /* DELETE data User */
@@ -246,11 +227,6 @@ Future<Response> _handlerUserFilter(Request request) async {
 /* READ data User */
 // {
 //   "nama" : "ostnyonge"
-// }
-
-// Fungsi untuk memeriksa peran admin
-// bool isAdmin(String userRole) {
-//   return userRole == 'admin';
 // }
 
 // PRODUK Create
@@ -288,16 +264,19 @@ INSERT INTO produk (
   var execute = await conn.query(sqlExecute, []);
   var sql = "SELECT * FROM produk WHERE nama_produk = ?";
   var produkResponse = await conn.query(sql, [produk.nama_produk]);
-  return Response.ok(produkResponse.toString());
+  return Response.ok("""
+Berhasil Membuat Produk !
+info :
+  >> ${produkResponse.toString()}""");
 }
 
 /* CREATE data PRODUK */
 // {
-//   "id_produk" : 2,
-//   "nama_produk" : "Teh Hijau",
-//   "deskripsi" : "daun teh pilihan",
-//   "harga" : "Rp.15000",
-//   "stok" : 5
+//   "id_produk" : 4,
+//   "nama_produk" : "Rosy Moonlight",
+//   "deskripsi" : "Silver Needle White Tea + Rose + Jasmine",
+//   "harga" : 127000,
+//   "stok" : 23
 // }
 
 // PRODUK Update
@@ -320,16 +299,19 @@ WHERE id_produk = '${produk.id_produk}'
   var sql = "SELECT * FROM produk WHERE id_produk = ?";
   var produkResponse = await conn.query(sql, [produk.id_produk]);
 
-  return Response.ok(produkResponse.toString());
+  return Response.ok("""
+Berhasil Mengubah Produk !
+info :
+  >> ${produkResponse.toString()}""");
 }
 
 /* UPDATE data PRODUK */
 // {
-//   "id_produk" : 2,
-//   "nama_produk" : "Teh Sariwangi Bundar",
-//   "deskripsi" : "Bundarnya pas di gelas",
-//   "harga" : "Rp. 20.000",
-//   "stok" : 3
+//   "id_produk" : 4,
+//   "nama_produk" : "Rosy Moonlight",
+//   "deskripsi" : "Silver Needle White Tea + Rose + Jasmine",
+//   "harga" : 187000,
+//   "stok" : 15
 // }
 
 // PRODUK Delete
@@ -347,12 +329,15 @@ DELETE FROM produk WHERE id_produk ='${produk.id_produk}'
   var sql = "SELECT * FROM produk WHERE id_produk = ?";
   var produkResponse = await conn.query(sql, [produk.id_produk]);
 
-  return Response.ok(produkResponse.toString());
+  return Response.ok("""
+Berhasil Menghapus Produk !
+info :
+  >> ${produkResponse.toString()}""");
 }
 
 /* DELETE data PRODUK */
 // {
-//   "id_produk" : 2
+//   "id_produk" : 4
 // }
 
 // PRODUK Read
@@ -376,7 +361,7 @@ Future<Response> _handlerProdukFilter(Request request) async {
 
 /* READ data PRODUK */
 // {
-//   "nama_produk" : "teh bundar"
+//   "nama_produk" : "bery"
 // }
 
 // PELANGGAN Create
@@ -394,11 +379,11 @@ Future<Response> postDataPelanggan(Request request) async {
   var conn = await _ConnectSql();
   var sqlExecute = """
 INSERT INTO pelanggan (
-  id_pelanggan, nama, alamat, email,
+  nama, alamat, email,
   no_telepon, tanggal_input,
   tanggal_update
 ) VALUES (
-  '${pelanggan.id_pelanggan}', '${pelanggan.nama}',
+  '${pelanggan.nama}',
   '${pelanggan.alamat}', '${pelanggan.email}',
   '${pelanggan.no_telepon}', '${pelanggan.tanggal_input}',
   '${pelanggan.tanggal_update}'
@@ -407,7 +392,10 @@ INSERT INTO pelanggan (
   var execute = await conn.query(sqlExecute, []);
   var sql = "SELECT * FROM pelanggan WHERE nama = ?";
   var pelangganResponse = await conn.query(sql, [pelanggan.nama]);
-  return Response.ok(pelangganResponse.toString());
+  return Response.ok("""
+Berhasil Membuat Pelanggan Baru !
+info :
+  >> ${pelangganResponse.toString()}""");
 }
 
 /* CREATE data Pelanggan */
@@ -445,7 +433,10 @@ WHERE id_pelanggan = '${pelanggan.id_pelanggan}'
   var sql = "SELECT * FROM pelanggan WHERE id_pelanggan = ?";
   var pelangganResponse = await conn.query(sql, [pelanggan.id_pelanggan]);
 
-  return Response.ok(pelangganResponse.toString());
+  return Response.ok("""
+Berhasil Mengubah Data Pelanggan !
+info :
+  >> ${pelangganResponse.toString()}""");
 }
 
 /* UPDATE data PELANGGAN */
@@ -472,7 +463,10 @@ DELETE FROM pelanggan WHERE id_pelanggan ='${pelanggan.id_pelanggan}'
   var sql = "SELECT * FROM pelanggan WHERE id_pelanggan = ?";
   var pelangganResponse = await conn.query(sql, [pelanggan.id_pelanggan]);
 
-  return Response.ok(pelangganResponse.toString());
+  return Response.ok("""
+Berhasil Menghapus Pelanggan !
+info :
+  >> ${pelangganResponse.toString()}""");
 }
 
 /* DELETE data Pelanggan */
@@ -528,12 +522,12 @@ Future<Response> postDataPesanan(Request request) async {
 
   var conn = await _ConnectSql();
 
-  /* CREATE DETAIL PESANAN */
-  DetailPesanan detailPesanan = detailPesananFromJson(body);
-
   // mengambil data harga dari tabel produk
   var produkId = await conn
       .query('SELECT id_produk FROM produk WHERE harga = ?', [pesanan.harga]);
+
+  /* CREATE DETAIL PESANAN */
+  DetailPesanan detailPesanan = detailPesananFromJson(body);
 
   // mendapatkan id_produk
   if (produkId.isNotEmpty) {
@@ -545,8 +539,8 @@ INSERT INTO pesanan (
   id_pelanggan, harga, jumlah,
   tanggal_pesanan, tanggal_update
 ) VALUES (
-  '${pesanan.id_pesanan}', '${pesanan.kode_pesanan}',
-  '${pesanan.id_pelanggan}', '${pesanan.harga}', '${pesanan.jumlah}',
+  '${pesanan.id_pesanan}', '${pesanan.kode_pesanan}', '${pesanan.id_pelanggan}',
+  '${pesanan.harga}', '${pesanan.jumlah}',
   '${pesanan.tanggal_pesanan}', '${pesanan.tanggal_update}'
 )
 """;
@@ -555,7 +549,6 @@ INSERT INTO pesanan (
     var sql = "SELECT * FROM pesanan WHERE kode_pesanan = ?";
     var pesananResponse = await conn.query(sql, [pesanan.kode_pesanan]);
 
-    detailPesanan.id_detail_pesanan = generateRandomKodePesanan();
     detailPesanan.id_pesanan = pesanan.id_pesanan;
     detailPesanan.jumlah = pesanan.jumlah;
     detailPesanan.subtotal = (pesanan.harga! * pesanan.jumlah!);
@@ -564,28 +557,26 @@ INSERT INTO pesanan (
     var conn_dp = await _ConnectSql();
     var sqlExecute_dp = """
       INSERT INTO detail_pesanan (
-          id_detail_pesanan, id_pesanan, id_produk, jumlah, subtotal
+          id_pesanan, id_produk, jumlah, subtotal
       ) VALUES (
-          '${detailPesanan.id_detail_pesanan}', '${detailPesanan.id_pesanan}',
-          '${detailPesanan.id_produk}', '${detailPesanan.jumlah}',
-          '${detailPesanan.subtotal}'
+          '${detailPesanan.id_pesanan}', '${detailPesanan.id_produk}',
+          '${detailPesanan.jumlah}', '${detailPesanan.subtotal}'
       )
   """;
+
     var execute_dp = await conn_dp.query(sqlExecute_dp, []);
 
     return Response.ok("""
-*           Transaksi Pesanan Berhasil !           *
--------------------------------------------------
-${pesananResponse.toString()}
+Transaksi Pesanan Berhasil !
+info :
+  >> ${pesananResponse.toString()}
 """);
   } else {
     // Jika tidak ada produk dengan harga yang diberikan
     return Response.notFound("""
-*           Transaksi Pesanan Gagal !           *
--------------------------------------------------
-
-( Produk dengan harga tersebut tidak ditemukan )
--------------------------------------------------
+Transaksi Pesanan Gagal !
+info :
+  >> Produk dengan harga tersebut tidak ditemukan
 """);
   }
 }
@@ -647,18 +638,16 @@ WHERE id_pesanan = '${detailPesanan.id_pesanan}'
     var execute_dp = await conn_dp.query(sqlExecute_dp, []);
 
     return Response.ok("""
-*          Berhasil Mengubah Pesanan !          *
--------------------------------------------------
-${pesananResponse.toString()}
+Berhasil Mengubah Pesanan !
+info :
+  >> ${pesananResponse.toString()}
 """);
   } else {
     // Jika tidak ada produk dengan harga yang diberikan
     return Response.notFound("""
-*           Gagal Mengubah Pesanan !            *
--------------------------------------------------
-
-( Produk dengan harga tersebut tidak ditemukan )
--------------------------------------------------
+Gagal Mengubah Pesanan !
+info :
+  >> Produk dengan harga tersebut tidak ditemukan
 """);
   }
 }
@@ -686,9 +675,9 @@ DELETE FROM pesanan WHERE id_pesanan ='${pesanan.id_pesanan}'
   var pesananResponse = await conn.query(sql, [pesanan.id_pesanan]);
 
   return Response.ok("""
-*          Berhasil Menghapus Pesanan !          *
--------------------------------------------------
-${pesananResponse.toString()}
+Berhasil Menghapus Pesanan !
+info :
+  >> ${pesananResponse.toString()}
 """);
 }
 
@@ -711,7 +700,7 @@ Future<Response> _handlerPesananFilter(Request request) async {
 
   var conn = await _ConnectSql();
 
-  // menampilkan data dengan query relationship (INNER JOIN) pada tabel pelanggan.nama
+  // menampilkan data dengan query relationship (INNER JOIN) dari tabel pesanan.id_pelanggan ke tabel pelanggan.nama
   var pesanan = await conn.query(
       'SELECT * FROM pesanan INNER JOIN pelanggan ON pesanan.id_pelanggan = pelanggan.id_pelanggan where nama like ? ',
       [nama_pelanggan]);
@@ -734,15 +723,14 @@ Future<Response> _connectSqlHandlerDetailPesanan(Request request) async {
 
 Future<Response> _handlerDetailPesananFilter(Request request) async {
   String body = await request.readAsString();
-  var obj = json.decode(body);
-  var id_pesanan = "%" + obj['id_pesanan'] + "%";
+  DetailPesanan detail_pesanan = detailPesananFromJson(body);
 
   var conn = await _ConnectSql();
 
-  // menampilkan data dengan query relationship (INNER JOIN) pada tabel pelanggan.nama
+  // menampilkan data dengan query relationship (INNER JOIN) pada tabel pesanan.id_pesanan
   var pelanggan = await conn.query(
       'SELECT * FROM detail_pesanan where id_pesanan like ? ',
-      [id_pesanan]);
+      [detail_pesanan.id_pesanan]);
 
   return Response.ok(pelanggan.toString());
 }
