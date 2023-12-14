@@ -28,6 +28,14 @@ class Controller {
     return cn;
   }
 
+  Map<String, dynamic> _responseSuccessMsg(dynamic msg) {
+    return {'status': 200, '\nsuccess': true, '\ndata': msg};
+  }
+
+  Map<String, dynamic> _responseErrorMsg(dynamic msg) {
+    return {'status': 400, '\nsuccess': false, '\ndata': msg};
+  }
+
 // fungsi mendapatkan tanggal
   String getDateNow() {
     final DateTime now = DateTime.now();
@@ -184,7 +192,8 @@ info :
   Future<Response> getUser(Request request) async {
     var conn = await connectSql();
     var user = await conn.query('SELECT * FROM user', []);
-    return Response.ok(user.toString());
+    var response = _responseSuccessMsg(user.toString());
+    return Response.ok(response.toString());
   }
 
   Future<Response> getUserFilter(Request request) async {
@@ -196,7 +205,8 @@ info :
     var user =
         await conn.query('SELECT * FROM user where nama like ? ', [nama]);
 
-    return Response.ok(user.toString());
+    var response = _responseSuccessMsg(user.toString());
+    return Response.ok(response.toString());
   }
 
 /* READ data User */
@@ -331,7 +341,8 @@ info :
     var produk = await conn
         .query('SELECT * FROM produk where nama_produk like ? ', [nama]);
 
-    return Response.ok(produk.toString());
+    var response = _responseSuccessMsg(produk.toString());
+    return Response.ok(response.toString());
   }
 
 /* READ data PRODUK */
@@ -453,7 +464,8 @@ info :
   Future<Response> getPelanggan(Request request) async {
     var conn = await connectSql();
     var pelanggan = await conn.query('SELECT * FROM pelanggan', []);
-    return Response.ok(pelanggan.toString());
+    var response = _responseSuccessMsg(pelanggan.toString());
+    return Response.ok(response.toString());
   }
 
   Future<Response> getPelangganFilter(Request request) async {
@@ -465,7 +477,8 @@ info :
     var pelanggan =
         await conn.query('SELECT * FROM pelanggan where nama like ? ', [nama]);
 
-    return Response.ok(pelanggan.toString());
+    var response = _responseSuccessMsg(pelanggan.toString());
+    return Response.ok(response.toString());
   }
 
 /* READ data PELANGGAN */
@@ -492,14 +505,25 @@ info :
       return result;
     }
 
-    // Menghasilkan nilai acak untuk kode_pesanan
+    // Membuat nilai acak untuk kode_pesanan
     pesanan.kode_pesanan = generateRandomKodePesanan();
 
     var conn = await connectSql();
 
-    // mengambil data harga dari tabel produk
+    // mendapatkan data harga dari tabel produk dengan harga pada tabel pesanan
     var produkId = await conn
         .query('SELECT id_produk FROM produk WHERE harga = ?', [pesanan.harga]);
+
+    // mendapatkan data stok dari tabel produk dengan jumlah pada tabel pesanan
+    var produkStokResult = await conn.query(
+        'SELECT stok FROM produk WHERE id_produk = ?',
+        [produkId.first['id_produk']]);
+
+    var produkStok = produkStokResult.first['stok'];
+
+    if (pesanan.jumlah! > produkStok) {
+      return Response.forbidden('Maaf, stok tidak mencukupi untuk pesanan ini');
+    }
 
     /* CREATE DETAIL PESANAN */
     DetailPesanan detailPesanan = detailPesananFromJson(body);
@@ -575,6 +599,17 @@ info :
     // mengambil data harga dari tabel produk
     var produkId = await conn
         .query('SELECT id_produk FROM produk WHERE harga = ?', [pesanan.harga]);
+
+    // mendapatkan data stok dari tabel produk dengan jumlah pada tabel pesanan
+    var produkStokResult = await conn.query(
+        'SELECT stok FROM produk WHERE id_produk = ?',
+        [produkId.first['id_produk']]);
+
+    var produkStok = produkStokResult.first['stok'];
+
+    if (pesanan.jumlah! > produkStok) {
+      return Response.forbidden('Maaf, stok tidak mencukupi untuk pesanan ini');
+    }
 
     // UPDATE DETAIL PENJUALAN
     DetailPesanan detailPesanan = detailPesananFromJson(body);
@@ -665,7 +700,8 @@ info :
   Future<Response> getPesanan(Request request) async {
     var conn = await connectSql();
     var pesanan = await conn.query('SELECT * FROM pesanan', []);
-    return Response.ok(pesanan.toString());
+    var response = _responseSuccessMsg(pesanan.toString());
+    return Response.ok(response.toString());
   }
 
   Future<Response> getPesananFilter(Request request) async {
@@ -675,12 +711,13 @@ info :
 
     var conn = await connectSql();
 
-    // menampilkan data dengan query relationship (INNER JOIN) dari tabel pesanan.id_pelanggan ke tabel pelanggan.nama
+    // menampilkan data dengan (INNER JOIN) dari tabel pesanan.id_pelanggan --> untuk mendapatkan pesanan a/n pelanggan
     var pesanan = await conn.query(
         'SELECT * FROM pesanan INNER JOIN pelanggan ON pesanan.id_pelanggan = pelanggan.id_pelanggan where nama like ? ',
         [nama_pelanggan]);
 
-    return Response.ok(pesanan.toString());
+    var response = _responseSuccessMsg(pesanan.toString());
+    return Response.ok(response.toString());
   }
 
 /* READ Pesanan */
@@ -693,7 +730,8 @@ info :
     var conn = await connectSql();
     var detail_pesanan = await conn.query("""SELECT * FROM detail_pesanan
   """, []);
-    return Response.ok(detail_pesanan.toString());
+    var response = _responseSuccessMsg(detail_pesanan.toString());
+    return Response.ok(response.toString());
   }
 
   Future<Response> getDetailPesananFilter(Request request) async {
@@ -702,16 +740,16 @@ info :
 
     var conn = await connectSql();
 
-    // menampilkan data dengan query relationship (INNER JOIN) pada tabel pesanan.id_pesanan
     var pelanggan = await conn.query(
-        'SELECT * FROM detail_pesanan where id_pesanan like ? ',
-        [detail_pesanan.id_pesanan]);
+        'SELECT * FROM detail_pesanan where id_detail_pesanan like ? ',
+        [detail_pesanan.id_detail_pesanan]);
 
-    return Response.ok(pelanggan.toString());
+    var response = _responseSuccessMsg(pelanggan.toString());
+    return Response.ok(response.toString());
   }
 
 /* READ Detail_penjualan */
 // {
-//   "id_pesanan": "2"
+//   "id_detail_pesanan": "2"
 // }
 }
